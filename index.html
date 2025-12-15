@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <title>NECS 2026 Companion (Vanilla)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Poppins', 'sans-serif'],
+            },
+            colors: {
+              midnight: '#071026',
+              surface: '#0E1A2A',
+              crimson: '#C92A2A',
+              crimsonDark: '#8E1B2B',
+              cyan: '#00B7E6',
+              textMain: '#E9EEF8',
+              textMuted: '#A9B4C7',
+            },
+            backgroundImage: {
+              'gradient-primary': 'linear-gradient(135deg, #D83B3B 0%, #C92A2A 60%, #8E1B2B 100%)',
+              'gradient-hero': 'linear-gradient(120deg, rgba(0,183,230,0.15), rgba(11,24,42,0.0))',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body { background-color: #020611; color: #E9EEF8; -webkit-font-smoothing: antialiased; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; position: fixed; width: 100%; height: 100%; overflow: hidden; }
+      .hide-scrollbar::-webkit-scrollbar { display: none; }
+      .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .glass-panel { background: rgba(14, 26, 42, 0.7); backdrop-filter: blur(12px) saturate(120%); border: 1px solid rgba(255,255,255,0.08); }
+      /* Motion & micro-interactions */
+      :root { --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in-out: cubic-bezier(0.7, 0, 0.3, 1); }
+      .btn { transition: transform 180ms var(--ease-out), box-shadow 200ms var(--ease-out), background-color 200ms; }
+      .btn:active { transform: scale(0.97); }
+      .card { transition: transform 220ms var(--ease-out), border-color 220ms, box-shadow 220ms; }
+      .card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.15); box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
+      .nav-btn { transition: color 160ms, transform 160ms var(--ease-out); }
+      .nav-btn:active { transform: translateY(1px); }
+      .fade-in { animation: fadeIn 320ms var(--ease-out) both; }
+      .slide-up { animation: slideUp 360ms var(--ease-out) both; }
+      .zoom-in { animation: zoomIn 320ms var(--ease-out) both; }
+      @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+      @keyframes slideUp { from { transform: translateY(6px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+      @keyframes zoomIn { from { transform: scale(0.985); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+      .ripple { position: relative; overflow: hidden; }
+      .ripple:after { content:''; position:absolute; left:50%; top:50%; width:6px; height:6px; background: rgba(255,255,255,0.3); border-radius:50%; transform: translate(-50%,-50%) scale(0); opacity:0; }
+      .ripple:active:after { animation: ripple 500ms var(--ease-out); }
+      @keyframes ripple { 0%{opacity:1; transform:translate(-50%,-50%) scale(0)} 100%{opacity:0; transform:translate(-50%,-50%) scale(12)} }
+      .hover-glow:hover { box-shadow: 0 0 12px rgba(0,183,230,0.35); }
+      .chev { transition: transform 200ms var(--ease-out); }
+      .chev.open { transform: rotate(180deg); }
+      /* Smooth screen transitions and native feel */
+      #screenContainer { transition: opacity 200ms ease-in-out; }
+      /* Mobile device frame - iPhone 16 Pro */
+      .device-frame { 
+        position: fixed; 
+        padding: 8px; 
+        background: #2a2a2a; 
+        border-radius: 58px; 
+        box-shadow: 
+          0 0 0 4px #4a4a4a, /* Titanium finish */
+          0 0 0 5px #1a1a1a, 
+          0 50px 100px rgba(0,0,0,0.6); 
+        display: inline-block; 
+        top: 50%; 
+        left: 50%; 
+        transform: translate(-50%, -50%); 
+        z-index: 9999;
+      }
+      .device-notch { 
+        position: absolute; 
+        top: 19px; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        width: 120px; 
+        height: 35px; 
+        background: #000; 
+        border-radius: 20px; 
+        z-index: 100;
+        transition: all 0.3s ease;
+      }
+      .device-notch::after {
+        content: '';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        opacity: 0.5;
+      }
+      .device-buttons { position:absolute; right:-4px; top:100px; display:flex; flex-direction:column; gap:16px; }
+      .device-buttons .btn-side { width:3px; height:40px; background: #4a4a4a; border-radius:2px; }
+      .device-buttons .btn-side.small { height:26px; }
+      
+      /* Screen rounding */
+      #app { border-radius: 50px; }
+      
+      @media (max-width: 500px) { .device-frame { padding: 6px; border-radius: 40px; } .device-notch{ width:100px; height:30px; } }
+    </style>
+  </head>
+  <body>
+    <div class="device-frame">
+      <div class="device-notch"></div>
+      <div class="device-buttons"><span class="btn-side"></span><span class="btn-side small"></span></div>
+      <div id="app" class="w-full max-w-[330px] bg-midnight text-textMain font-sans relative shadow-2xl overflow-hidden selection:bg-crimson/30 flex flex-col" style="display: flex; flex-direction: column; position: relative; height: 680px;">
+      <div class="absolute inset-0 pointer-events-none z-0">
+        <div class="absolute top-0 left-0 w-full h-[500px] bg-gradient-hero opacity-60"></div>
+      </div>
+
+      <!-- Ticket Store Overlay -->
+      <div id="ticketStore" class="hidden"></div>
+
+      <!-- Profile Modal -->
+      <div id="profileModal" class="hidden"></div>
+
+      <!-- iOS Status Bar -->
+      <div class="absolute top-0 left-0 right-0 z-50 px-7 h-[58px] flex items-center justify-between text-[15px] font-semibold text-white pointer-events-none">
+        <span class="tracking-tight w-[50px] text-center">9:41</span>
+        <div class="flex items-center gap-1.5 w-[70px] justify-end">
+          <!-- Cellular -->
+          <svg class="w-[18px] h-[12px]" viewBox="0 0 18 12" fill="currentColor">
+            <path d="M1.5 8.5h2.5v3h-2.5v-3zm4.5-2.5h2.5v5.5H6V6zm4.5-3h2.5v8.5h-2.5V3zm4.5-3h2.5v11.5H15V0z"/>
+          </svg>
+          <!-- WiFi -->
+          <svg class="w-[18px] h-[12px]" viewBox="0 0 18 13" fill="currentColor">
+            <path d="M9 13L.5 3.5C2 2 5 0 9 0s7 2 8.5 3.5L9 13z"/>
+          </svg>
+          <!-- Battery -->
+          <div class="w-[25px] h-[12px] border-[1.5px] border-white/40 rounded-[4px] p-[1.5px] flex items-center relative ml-0.5">
+            <div class="w-full h-full bg-white rounded-[1px]"></div>
+            <div class="absolute -right-[3.5px] top-1/2 -translate-y-1/2 w-[2px] h-[4px] bg-white/40 rounded-r-[1px]"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Bar -->
+      <header class="absolute top-12 left-0 right-0 z-50 px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-midnight rounded-lg flex items-center justify-center border border-white/10 shadow-lg shadow-cyan/10 p-1.5 overflow-hidden">
+            <img id="logo" alt="NECS Logo" class="w-full h-full object-contain" />
+          </div>
+          <h1 id="title" class="font-display font-bold text-lg tracking-tight">NECS 2026</h1>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="openProfileBtn" class="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors">
+            <span class="inline-block" id="bellIcon"></span>
+            <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-crimson rounded-full border border-midnight"></span>
+          </button>
+          <button id="openProfileAvatar" class="w-10 h-10 rounded-full bg-cyan/20 border border-cyan/30 overflow-hidden active:scale-95 transition-transform">
+            <img src="https://placehold.co/100x100/0E1A2A/00B7E6?text=User" alt="User" />
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main id="main" class="relative z-10 w-full overflow-y-auto hide-scrollbar flex-1" style="padding: 0.5rem 1rem 2rem 1rem; margin-top: 112px;">
+        <div id="screenContainer" class="w-full pb-12" style="opacity: 1;"></div>
+      </main>
+
+      <!-- Bottom Navigation -->
+      <nav class="absolute bottom-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur-lg border-t border-white/10 pb-safe" style="box-shadow: 0 -2px 8px rgba(0,0,0,0.3); height: 64px;">
+        <div class="flex justify-around items-center h-full w-full" id="bottomNav"></div>
+      </nav>
+      </div>
+    </div>
+
+    <script src="./constants.js"></script>
+    <script src="./ui.js"></script>
+    <script src="./icons.js"></script>
+    <script src="./script.js"></script>
+      <style>
+        /* Stable layout: prevent height shifts between screens */
+        #app { width: 330px; height: 680px; }
+        #screenContainer { min-height: 100%; }
+        img { max-width: 100%; height: auto; }
+      </style>
+  </body>
+</html>
