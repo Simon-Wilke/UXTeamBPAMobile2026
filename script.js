@@ -40,6 +40,35 @@ logoEl.src = LOGO_URL;
 const bellIconEl = document.getElementById('bellIcon');
 if (bellIconEl) bellIconEl.innerHTML = icon('bell', 20);
 
+const HEROES = [
+  'linear-gradient(180deg,#071026 0%,#001e2b 100%)',
+  'linear-gradient(180deg,#071026 0%,#8b1f1f 100%)',
+  'linear-gradient(180deg,#071026 0%,#f7f7f7 100%)',
+];
+
+const POLL_COLORS = ['#FF3B30','#FF6B81','#FF9500','#FFCC00','#FFD166','#34C759','#00C2A8','#5AC8FA','#1E90FF','#007AFF','#5856D6','#6A5ACD','#C277E0','#FF2D55','#F78DA7','#FF7F50','#B7E778','#8AFFC1','#FFD1DC','#B0E0E6'];
+
+function _hashString(s){ let h=0; for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i))>>>0; } return h; }
+function colorForOption(pollId, idx){
+  const hash = _hashString(pollId||'p');
+  const step = (hash % (POLL_COLORS.length-1)) + 1; // step 1..n-1
+  const start = hash % POLL_COLORS.length;
+  const colorIndex = (start + idx * step) % POLL_COLORS.length;
+  return POLL_COLORS[colorIndex];
+}
+
+const THUMB_COLORS = ['#0ea5e9','#ef4444','#f97316','#f59e0b','#10b981','#06b6d4','#6366f1','#7c3aed','#ec4899','#ef6c00','#22c55e','#3b82f6'];
+function replayThumb(replay){
+  const seed = (replay.id || replay.title || '') + (replay.game||'');
+  const h = _hashString(seed);
+  const c1 = THUMB_COLORS[h % THUMB_COLORS.length];
+  const c2 = THUMB_COLORS[(h + 5) % THUMB_COLORS.length];
+  const angle = 135 + (h % 30);
+  const gradient = `linear-gradient(${angle}deg, ${c1}55 0%, ${c2}66 60%)`;
+  // return a background div that layers the gradient over the thumbnail image for unique look
+  return `<div class="w-full h-full bg-cover bg-center" style="background-image: ${gradient}, url('${replay.thumbnail}');"></div>`;
+}
+
 document.getElementById('openProfileBtn').addEventListener('click', () => { state.isProfileOpen = true; render(); });
 document.getElementById('openProfileAvatar').addEventListener('click', () => { state.isProfileOpen = true; render(); });
 
@@ -78,12 +107,14 @@ function renderBottomNav() {
   }).join('');
 }
 
+function monogramStyle(name, size = 24) {
+  const colors = ['#FF3B30','#FF6B81','#FF9500','#FFCC00','#FFD166','#34C759','#00C2A8','#5AC8FA','#1E90FF','#5856D6','#C277E0','#FF2D55'];
+  const idx = (name && name.charCodeAt && name.charCodeAt(0)) ? (name.charCodeAt(0) % colors.length) : 0;
+  const color = colors[idx];
+  return `background: ${color}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; letter-spacing: .4px;`;
+}
+
 function HomeScreen() {
-  const HEROES = [
-    'linear-gradient(180deg,#071026 0%,#001e2b 100%)',
-    'linear-gradient(180deg,#071026 0%,#8b1f1f 100%)',
-    'linear-gradient(180deg,#071026 0%,#f7f7f7 100%)',
-  ];
   const heroImg = HEROES[state.heroIndex % HEROES.length];
   return `
   <div class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -95,7 +126,7 @@ function HomeScreen() {
 
     <div class="relative rounded-2xl overflow-hidden group border border-white/5 h-72 shadow-2xl">
       <div class="absolute inset-0 z-10" style="background-color:hsla(190,84%,44%,1); background-image:radial-gradient(at 83% 17%, hsla(255,81%,24%,1) 0px, transparent 50%),radial-gradient(at 16% 91%, hsla(345,91%,50%,1) 0px, transparent 50%);"></div>
-      <div class="absolute inset-0 w-full h-full opacity-70" style="background: ${heroImg};"></div>
+      <div id="heroBg" class="absolute inset-0 w-full h-full opacity-70" style="background: ${heroImg};"></div>
       <div class="absolute inset-0 z-20 p-4 flex flex-col justify-end items-center text-center">
         <img src="${LOGO_URL}" alt="NECS 2026" class="w-12 h-12 object-contain mb-2 drop-shadow-[0_0_15px_rgba(0,183,230,0.5)]" />
         ${badge('Opening Ceremony','upcoming')}
@@ -121,8 +152,8 @@ function HomeScreen() {
         ${MATCHES.map(match => `
           <div class="glass-panel card p-3 rounded-lg flex items-center justify-between text-xs">
             <div class="flex items-center gap-2 w-1/3 min-w-0">
-              <div class="w-6 h-6 rounded-md overflow-hidden border border-white/5 flex-shrink-0">
-                <img src="https://placehold.co/48x48/071026/00B7E6?text=${encodeURIComponent(match.teamA.logo)}" alt="${match.teamA.name}" class="w-full h-full object-cover" />
+              <div class="w-6 h-6 rounded-full overflow-hidden border border-white/5 flex-shrink-0">
+                <div style="${monogramStyle(match.teamA.name)};border-radius:50%" class="w-full h-full">${match.teamA.name.charAt(0)}</div>
               </div>
               <div class="flex flex-col min-w-0"><span class="font-bold truncate">${match.teamA.name}</span></div>
             </div>
@@ -132,8 +163,8 @@ function HomeScreen() {
             </div>
             <div class="flex items-center gap-2 w-1/3 justify-end min-w-0 text-right">
               <div class="flex flex-col min-w-0"><span class="font-bold truncate">${match.teamB.name}</span></div>
-              <div class="w-6 h-6 rounded-md overflow-hidden border border-white/5 flex-shrink-0">
-                <img src="https://placehold.co/48x48/071026/C92A2A?text=${encodeURIComponent(match.teamB.logo)}" alt="${match.teamB.name}" class="w-full h-full object-cover" />
+              <div class="w-6 h-6 rounded-full overflow-hidden border border-white/5 flex-shrink-0">
+                <div style="${monogramStyle(match.teamB.name)};border-radius:50%" class="w-full h-full">${match.teamB.name.charAt(0)}</div>
               </div>
             </div>
           </div>
@@ -305,8 +336,8 @@ function ReplaysScreen() {
     <div class="space-y-4">${REPLAYS.slice(0, 3).map(r => `
       <div class="group relative rounded-xl overflow-hidden bg-surface border border-white/5 active:scale-[0.98] transition-all shadow-lg">
         <div class="relative aspect-video">
-          <img src="${r.thumbnail}" alt="${r.title}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+          ${replayThumb(r)}
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
           <div class="absolute bottom-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold border border-white/10">${r.duration}</div>
           <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity scale-75 group-hover:scale-100">
             ${icon('playCircle', 24)}
@@ -334,7 +365,7 @@ function AllReplaysScreen() {
       ${REPLAYS.map(r => `
         <div class="flex gap-3 bg-surface/50 p-2 rounded-xl border border-white/5 hover:bg-surface transition-colors group">
           <div class="relative w-32 h-20 rounded-lg overflow-hidden flex-shrink-0">
-            <img src="${r.thumbnail}" alt="${r.title}" class="w-full h-full object-cover" />
+            ${replayThumb(r)}
             <div class="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[8px] font-bold">${r.duration}</div>
           </div>
           <div class="flex flex-col justify-center min-w-0">
@@ -354,11 +385,12 @@ function AllReplaysScreen() {
 
 function BracketScreen() {
   const rounds = ['Quarterfinals','Semifinals','Grand Final'];
+  const roundAccents = ['bg-gradient-to-r from-pink-500 to-orange-400', 'bg-gradient-to-r from-green-400 to-teal-400', 'bg-gradient-to-r from-violet-500 to-indigo-500'];
   return `<div class="space-y-6 h-full animate-in fade-in zoom-in-95 duration-500">
     <div class="flex items-center justify-between mb-4"><div><h2 class="text-xl font-display font-bold">Projected Bracket</h2><p class="text-xs text-textMuted">Matches start May 6th</p></div></div>
     <div class="space-y-8 relative">
       <div class="absolute left-[7px] top-4 bottom-10 w-px bg-white/5 z-0"></div>
-      ${rounds.map(round => `
+      ${rounds.map((round, i) => `
         <div class="relative z-10">
           <div class="flex items-center gap-2 mb-3"><div class="w-3 h-3 rounded-full bg-cyan border-2 border-midnight"></div><h3 class="text-sm font-bold text-textMuted uppercase tracking-wider">${round}</h3></div>
           <div class="pl-6 space-y-3">${BRACKET.filter(m=>m.round===round).map(match=>matchNode(match)).join('')}</div>
@@ -748,49 +780,74 @@ function stopCountdown(){ if (_countdownInterval) { clearInterval(_countdownInte
 function renderPolls(){
   const container = document.getElementById('pollsContainer');
   if (!container) return;
-  container.innerHTML = state.polls.map(p => {
+  container.innerHTML = state.polls.map((p, pollIndex) => {
     const total = p.options.reduce((s,o)=>s+o.votes,0) || 1;
+    const userVoted = !!p.userVote;
+    const highlightStyle = userVoted ? '' : 'background-image:linear-gradient(90deg, rgba(0,183,230,0.03), transparent); box-shadow:0 6px 30px rgba(0,183,230,0.03);';
     return `
-      <div class="glass-panel p-3 rounded-xl border border-white/5">
+      <div class="glass-panel p-3 rounded-xl border border-white/5" style="${highlightStyle}">
         <div class="flex items-center justify-between mb-2">
-          <div class="text-sm font-bold text-white">${p.question}</div>
-          <div class="text-[10px] text-textMuted">${total} votes</div>
+          <div>
+            <div class="text-sm font-bold text-white">${p.question}</div>
+            ${!userVoted?'<div class="text-xs font-semibold text-cyan mt-1">Cast your vote to reveal results</div>':''}
+          </div>
+          <div class="text-[10px] text-textMuted">${userVoted ? total + ' votes' : ''}</div>
         </div>
         <div class="space-y-2">
-          ${p.options.map(o => {
-            const pct = Math.round((o.votes/total)*100);
+          ${p.options.map((o, idx) => {
+            const color = colorForOption(p.id, idx);
+            const pct = userVoted ? Math.round((o.votes/total)*100) : 0;
             const voted = p.userVote===o.id;
             return `
-              <button class="w-full flex items-center gap-3 p-2 rounded-lg transition-all btn ${voted? 'ring-2 ring-cyan/40 scale-102':''}" onclick="votePoll('${p.id}','${o.id}')">
+              <button class="w-full flex items-center gap-3 p-3 rounded-2xl transition-all btn hover:scale-[1.005] active:scale-95 shadow-sm" onclick="votePoll('${p.id}','${o.id}')" style="${voted?`box-shadow:0 0 0 4px ${color}33; border-radius:18px;`:''}">
+                <div style="width:10px;height:10px;background:${color};border-radius:8px;flex-shrink:0;margin-right:8px;box-shadow:0 2px 6px ${color}33"></div>
                 <div class="flex-1 text-left">
                   <div class="flex items-center justify-between mb-1">
-                    <div class="text-[13px] font-medium ${voted?'text-cyan text-white':'text-white'}">${o.label}</div>
-                    <div class="text-[11px] text-textMuted">${pct}%</div>
+                    <div class="text-[14px] font-semibold text-white">${o.label}</div>
+                    <div class="text-[12px] text-textMuted">${userVoted? pct+'%':''}</div>
                   </div>
-                  <div class="h-2 bg-white/10 rounded overflow-hidden">
-                    <div class="h-full bg-cyan transition-all" style="width:${pct}%;min-width:2px"></div>
+                  <div class="h-3 bg-white/8 rounded overflow-hidden">
+                    <div class="h-full transition-all" style="width:${pct}%;min-width:${userVoted?Math.max(4, pct/5):0}px;background:${color};border-radius:6px"></div>
                   </div>
                 </div>
-                <div class="w-8 text-right text-xs text-textMuted">${o.votes}</div>
+                <div class="w-14 text-right text-sm font-bold text-white flex items-center justify-end gap-2">
+                  <div>${userVoted?o.votes:'-'}</div>
+                  ${!userVoted?`<div class="text-[11px] font-bold text-cyan bg-cyan/10 px-2 py-0.5 rounded">Vote</div>`:''}
+                </div>
               </button>`;
           }).join('')}
         </div>
       </div>`;
   }).join('');
+
+  // removed pulse animation per design request
 }
 
 function votePoll(pollId, optionId){
   const poll = state.polls.find(p=>p.id===pollId);
   if (!poll) return;
-  if (poll.userVote) return; // single vote per poll (client-side)
+  const prev = poll.userVote;
+  // unvote if clicking the same option
+  if (prev === optionId) {
+    const opt = poll.options.find(o=>o.id===optionId);
+    if (opt && opt.votes>0) opt.votes -= 1;
+    poll.userVote = null;
+    renderPolls();
+    return;
+  }
   const opt = poll.options.find(o=>o.id===optionId);
   if (!opt) return;
+  // change vote if previously voted
+  if (prev) {
+    const prevOpt = poll.options.find(o=>o.id===prev);
+    if (prevOpt && prevOpt.votes>0) prevOpt.votes -= 1;
+  }
   opt.votes += 1;
   poll.userVote = optionId;
   renderPolls();
-  // small pulse animation
+  // small pulse animation on the chosen option
   const el = document.querySelector(`#pollsContainer button[onclick*="${optionId}"]`);
-  if (el){ el.animate([{ transform: 'scale(1.02)' }, { transform: 'scale(1)' }], { duration: 250 }); }
+  if (el){ el.animate([{ transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220 }); }
 }
 
 function render() {
@@ -822,6 +879,12 @@ function render() {
 setInterval(() => {
   state.heroIndex++;
   if (state.activeTab === Screen.Home && !state.isProfileOpen && !state.isStoreOpen) {
+    const hero = document.getElementById('heroBg');
+    if (hero) {
+      hero.style.background = HEROES[state.heroIndex % HEROES.length];
+      return;
+    }
+    // fallback to full render if hero element is not present
     render();
   }
 }, 5000);

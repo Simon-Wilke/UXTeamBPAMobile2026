@@ -11,15 +11,26 @@ function badge(text, variant = 'primary') {
 }
 
 function matchNode(match) {
+  const colors = ['#FF6B81','#FF9500','#FFD166','#34C759','#00C2A8','#5AC8FA','#1E90FF','#5856D6','#C277E0','#FF2D55','#F78DA7','#FF7F50'];
+  function _hash(s){ let h=0; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; } return h; }
+  function colorFor(name){ return colors[_hash(name||'') % colors.length]; }
+  const aColor = colorFor(match.teamA||match.teamAName||'A');
+  const bColor = colorFor(match.teamB||match.teamBName||'B');
   return `<div class="relative p-3 rounded-lg border bg-surface border-white/5 mb-3">
-    <div class="flex justify-between items-center mb-1.5">
-      <span class="text-sm font-semibold text-textMain">${match.teamA}</span>
-      <span class="text-sm font-mono text-textMuted">${match.scoreA ?? '-'}</span>
+    <div class="flex items-center justify-between mb-1.5 gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style="background:${aColor};box-shadow:0 6px 18px ${aColor}33">${(match.teamA||'').charAt(0) || ''}</div>
+        <div class="min-w-0"><span class="text-sm font-semibold text-textMain truncate">${match.teamA}</span></div>
+      </div>
+      <div class="text-sm font-mono text-textMuted">${match.scoreA ?? '-'}</div>
     </div>
-    <div class="w-full h-px bg-white/5 mb-1.5"></div>
-    <div class="flex justify-between items-center">
-      <span class="text-sm font-semibold text-textMain">${match.teamB}</span>
-      <span class="text-sm font-mono text-textMuted">${match.scoreB ?? '-'}</span>
+    <div class="w-full h-px bg-white/5 my-2"></div>
+    <div class="flex items-center justify-between gap-3">
+      <div class="min-w-0"><span class="text-sm font-semibold text-textMain truncate">${match.teamB}</span></div>
+      <div class="flex items-center gap-3">
+        <div class="text-sm font-mono text-textMuted">${match.scoreB ?? '-'}</div>
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style="background:${bColor};box-shadow:0 6px 18px ${bColor}33">${(match.teamB||'').charAt(0) || ''}</div>
+      </div>
     </div>
   </div>`;
 }
