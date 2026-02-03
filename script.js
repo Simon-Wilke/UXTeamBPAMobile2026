@@ -21,7 +21,13 @@ let state = {
   selectedPlayerId: null,
   heroIndex: 0,
   viewAllReplays: false,
+  polls: [
+    { id: 'p1', question: 'Which team are you most excited to watch?', options: [ { id: 'o1', label: 'Crimson Vipers', votes: 120 }, { id: 'o2', label: 'Nebula', votes: 80 }, { id: 'o3', label: 'Quantum', votes: 45 } ], userVote: null },
+    { id: 'p2', question: 'Which game will have the best finals?', options: [ { id: 'o1', label: 'Valorant', votes: 90 }, { id: 'o2', label: 'Rocket League', votes: 110 }, { id: 'o3', label: 'Smash', votes: 70 } ], userVote: null }
+  ],
 };
+
+let _countdownInterval = null;
 
 const root = document.getElementById('app');
 const screenContainer = document.getElementById('screenContainer');
@@ -74,9 +80,9 @@ function renderBottomNav() {
 
 function HomeScreen() {
   const HEROES = [
-    'https://placehold.co/600x400/0f172a/00b7e6?text=NECS+Arena',
-    'https://placehold.co/600x400/0f172a/C92A2A?text=Valorant+Stage',
-    'https://placehold.co/600x400/0f172a/ffffff?text=Rocket+League+Stadium',
+    'linear-gradient(180deg,#071026 0%,#001e2b 100%)',
+    'linear-gradient(180deg,#071026 0%,#8b1f1f 100%)',
+    'linear-gradient(180deg,#071026 0%,#f7f7f7 100%)',
   ];
   const heroImg = HEROES[state.heroIndex % HEROES.length];
   return `
@@ -88,20 +94,23 @@ function HomeScreen() {
     </div>
 
     <div class="relative rounded-2xl overflow-hidden group border border-white/5 h-72 shadow-2xl">
-      <div class="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/80 to-transparent z-10"></div>
-      <img src="${heroImg}" alt="Event Arena" class="w-full h-full object-cover opacity-70" />
+      <div class="absolute inset-0 z-10" style="background-color:hsla(190,84%,44%,1); background-image:radial-gradient(at 83% 17%, hsla(255,81%,24%,1) 0px, transparent 50%),radial-gradient(at 16% 91%, hsla(345,91%,50%,1) 0px, transparent 50%);"></div>
+      <div class="absolute inset-0 w-full h-full opacity-70" style="background: ${heroImg};"></div>
       <div class="absolute inset-0 z-20 p-4 flex flex-col justify-end items-center text-center">
         <img src="${LOGO_URL}" alt="NECS 2026" class="w-12 h-12 object-contain mb-2 drop-shadow-[0_0_15px_rgba(0,183,230,0.5)]" />
         ${badge('Opening Ceremony','upcoming')}
         <h2 class="text-2xl font-display font-bold text-white mt-2 mb-0.5">The Finals Await</h2>
         <p class="text-cyan font-medium text-xs mb-4">Nashville Music City Center</p>
-        <div class="flex items-center gap-3 mb-4">
-          <div class="text-center"><div class="text-xl font-bold font-mono bg-white/10 rounded px-1.5 py-0.5 backdrop-blur border border-white/10">04</div><div class="text-[9px] text-textMuted uppercase mt-0.5">Days</div></div>
+        <div class="flex items-center gap-3 mb-4" id="countdownRow">
+          <div class="text-center"><div id="cd-days" class="text-xl font-bold font-mono bg-white/10 rounded px-1.5 py-0.5 backdrop-blur border border-white/10">--</div><div class="text-[9px] text-textMuted uppercase mt-0.5">Days</div></div>
           <div class="text-lg font-bold text-white/30">:</div>
-          <div class="text-center"><div class="text-xl font-bold font-mono bg-white/10 rounded px-1.5 py-0.5 backdrop-blur border border-white/10">12</div><div class="text-[9px] text-textMuted uppercase mt-0.5">Hrs</div></div>
+          <div class="text-center"><div id="cd-hours" class="text-xl font-bold font-mono bg-white/10 rounded px-1.5 py-0.5 backdrop-blur border border-white/10">--</div><div class="text-[9px] text-textMuted uppercase mt-0.5">Hrs</div></div>
           <div class="text-lg font-bold text-white/30">:</div>
-          <div class="text-center"><div class="text-xl font-bold font-mono bg-white/10 rounded px-1.5 py-0.5 backdrop-blur border border-white/10">30</div><div class="text-[9px] text-textMuted uppercase mt-0.5">Min</div></div>
+          <div class="text-center"><div id="cd-mins" class="text-xl font-bold font-mono bg-white/10 rounded px-1.5 py-0.5 backdrop-blur border border-white/10">--</div><div class="text-[9px] text-textMuted uppercase mt-0.5">Min</div></div>
+          <div class="text-lg font-bold text-white/30">:</div>
+          <div class="text-center"><div id="cd-secs" class="text-xl font-bold font-mono bg-white/10 rounded px-1.5 py-0.5 backdrop-blur border border-white/10">--</div><div class="text-[9px] text-textMuted uppercase mt-0.5">Sec</div></div>
         </div>
+        
         <button class="bg-white text-midnight font-bold py-2 px-5 rounded-full text-xs hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] btn" onclick="openStore()">Get Tickets</button>
       </div>
     </div>
@@ -130,6 +139,11 @@ function HomeScreen() {
           </div>
         `).join('')}
       </div>
+    </div>
+    
+    <div class="mt-4">
+      <h3 class="text-sm font-display font-semibold mb-3">Live Polls</h3>
+      <div id="pollsContainer" class="space-y-3"></div>
     </div>
   </div>`;
 }
@@ -357,6 +371,7 @@ function ChatScreen() {
   const msgs = state.chatMessages;
   return `<div class="flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
     <div class="flex-1 overflow-y-auto hide-scrollbar space-y-4 pb-24 px-1" id="chatScroll">
+      <div id="pollsContainer" class="space-y-3 px-1"></div>
       <div class="text-center py-2"><span class="text-[10px] text-textMuted uppercase tracking-widest bg-surface/50 px-3 py-1 rounded-full border border-white/5">Pre-Event Discussion</span></div>
       ${msgs.map(msg => `
         <div class="flex gap-3 ${msg.isMe?'flex-row-reverse':''} animate-in slide-up">
@@ -576,7 +591,7 @@ function sendChat(){
   input.value='';
   render();
   const scroller = document.getElementById('chatScroll');
-  if (scroller) scroller.scrollTop = scroller.scrollHeight;
+  if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
 }
 
 function renderScreen() {
@@ -694,6 +709,90 @@ function openNotificationsTab(){
   document.getElementById('profileContent').innerHTML = html;
 }
 
+// Countdown utilities
+function _pad(n){ return String(n).padStart(2,'0'); }
+function updateCountdownDisplay(){
+  const daysEl = document.getElementById('cd-days');
+  const hoursEl = document.getElementById('cd-hours');
+  const minsEl = document.getElementById('cd-mins');
+  const secsEl = document.getElementById('cd-secs');
+  if (!daysEl) return; // not on screen
+  const now = new Date();
+  const target = new Date(EVENT_START_ISO);
+  let diff = Math.max(0, target - now);
+  if (diff <= 0) {
+    daysEl.textContent = '00'; hoursEl.textContent = '00'; minsEl.textContent = '00'; secsEl.textContent = '00';
+    const row = document.getElementById('countdownRow');
+    if (row && !row.dataset.live) { row.dataset.live = '1'; row.insertAdjacentHTML('beforeend', '<div class="text-xs text-green-400 ml-3">Live now</div>'); }
+    return;
+  }
+  const secs = Math.floor(diff/1000) % 60;
+  const mins = Math.floor(diff/1000/60) % 60;
+  const hours = Math.floor(diff/1000/60/60) % 24;
+  const days = Math.floor(diff/1000/60/60/24);
+  daysEl.textContent = _pad(days);
+  hoursEl.textContent = _pad(hours);
+  minsEl.textContent = _pad(mins);
+  secsEl.textContent = _pad(secs);
+}
+
+function startCountdown(){
+  stopCountdown();
+  updateCountdownDisplay();
+  _countdownInterval = setInterval(updateCountdownDisplay, 1000);
+}
+
+function stopCountdown(){ if (_countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; } }
+
+// Polls rendering & voting
+function renderPolls(){
+  const container = document.getElementById('pollsContainer');
+  if (!container) return;
+  container.innerHTML = state.polls.map(p => {
+    const total = p.options.reduce((s,o)=>s+o.votes,0) || 1;
+    return `
+      <div class="glass-panel p-3 rounded-xl border border-white/5">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-sm font-bold text-white">${p.question}</div>
+          <div class="text-[10px] text-textMuted">${total} votes</div>
+        </div>
+        <div class="space-y-2">
+          ${p.options.map(o => {
+            const pct = Math.round((o.votes/total)*100);
+            const voted = p.userVote===o.id;
+            return `
+              <button class="w-full flex items-center gap-3 p-2 rounded-lg transition-all btn ${voted? 'ring-2 ring-cyan/40 scale-102':''}" onclick="votePoll('${p.id}','${o.id}')">
+                <div class="flex-1 text-left">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="text-[13px] font-medium ${voted?'text-cyan text-white':'text-white'}">${o.label}</div>
+                    <div class="text-[11px] text-textMuted">${pct}%</div>
+                  </div>
+                  <div class="h-2 bg-white/10 rounded overflow-hidden">
+                    <div class="h-full bg-cyan transition-all" style="width:${pct}%;min-width:2px"></div>
+                  </div>
+                </div>
+                <div class="w-8 text-right text-xs text-textMuted">${o.votes}</div>
+              </button>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function votePoll(pollId, optionId){
+  const poll = state.polls.find(p=>p.id===pollId);
+  if (!poll) return;
+  if (poll.userVote) return; // single vote per poll (client-side)
+  const opt = poll.options.find(o=>o.id===optionId);
+  if (!opt) return;
+  opt.votes += 1;
+  poll.userVote = optionId;
+  renderPolls();
+  // small pulse animation
+  const el = document.querySelector(`#pollsContainer button[onclick*="${optionId}"]`);
+  if (el){ el.animate([{ transform: 'scale(1.02)' }, { transform: 'scale(1)' }], { duration: 250 }); }
+}
+
 function render() {
   setTitle();
   renderBottomNav();
@@ -704,6 +803,17 @@ function render() {
     screenContainer.innerHTML = renderScreen();
   }
   
+  // start/stop countdown depending on active screen
+  if (state.activeTab === Screen.Home) startCountdown(); else stopCountdown();
+  // render polls if present
+  renderPolls();
+
+  // auto-scroll chat to bottom when community screen is active
+  if (state.activeTab === Screen.Community) {
+    const scroller = document.getElementById('chatScroll');
+    if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
+  }
+
   renderProfileModal();
   renderStore();
 }

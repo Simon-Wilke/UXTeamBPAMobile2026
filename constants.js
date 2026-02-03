@@ -1,6 +1,10 @@
 // Data constants migrated from React version
 const LOGO_URL = "https://drive.google.com/thumbnail?id=1J-RYb4TuLbRGYURI4ta-cx3eU_kfXPGk&sz=w1000";
 
+// Event timing (ISO) — used by the countdown
+const EVENT_START_ISO = '2026-05-06T10:00:00-05:00';
+const EVENT_END_ISO = '2026-05-10T22:00:00-05:00';
+
 const MATCHES = [
   { id: '1', game: 'Valorant', tournament: 'Opening Match', teamA: { name: 'Crimson Vipers', score: 0, logo: 'V' }, teamB: { name: 'Cobalt Strikers', score: 0, logo: 'S' }, status: 'UPCOMING', time: 'May 6 • 10:00 AM' },
   { id: '2', game: 'Rocket League', tournament: 'Group Stage A', teamA: { name: 'Nebula', score: 0, logo: 'N' }, teamB: { name: 'Quantum', score: 0, logo: 'Q' }, status: 'UPCOMING', time: 'May 6 • 11:30 AM' },
@@ -10,6 +14,7 @@ const MATCHES = [
 ];
 
 const PLAYERS = [
+  // Valorant — 3 teams (Crimson Vipers, Cobalt Strikers, Obsidian)
   { id: 'v1', name: 'Alex Chen', handle: 'Ace', team: 'Crimson Vipers', role: 'Duelist', game: 'Valorant', image: 'https://placehold.co/200x200/C92A2A/ffffff?text=Ace', kda: '1.45', winRate: '62%', stats: [
     { subject: 'ACS', A: 145 }, { subject: 'K/D', A: 130 }, { subject: 'HS%', A: 140 }, { subject: 'First Blood', A: 135 }, { subject: 'Utility', A: 80 }, { subject: 'Survival', A: 90 }
   ]},
@@ -19,17 +24,39 @@ const PLAYERS = [
   { id: 'v3', name: 'David Smith', handle: 'Strategist', team: 'Cobalt Strikers', role: 'Controller', game: 'Valorant', image: 'https://placehold.co/200x200/0047AB/ffffff?text=Strat', kda: '1.05', winRate: '68%', stats: [
     { subject: 'ACS', A: 90 }, { subject: 'K/D', A: 100 }, { subject: 'HS%', A: 110 }, { subject: 'Clutch', A: 140 }, { subject: 'Utility', A: 145 }, { subject: 'IGL', A: 150 }
   ]},
+  { id: 'v4', name: 'Ibrahim Noor', handle: 'Shade', team: 'Obsidian', role: 'Initiator', game: 'Valorant', image: 'https://placehold.co/200x200/0b132b/ffffff?text=Shade', kda: '1.22', winRate: '60%', stats: [
+    { subject: 'ACS', A: 120 }, { subject: 'K/D', A: 115 }, { subject: 'HS%', A: 105 }, { subject: 'First Blood', A: 125 }, { subject: 'Utility', A: 120 }, { subject: 'Survival', A: 110 }
+  ]},
+  { id: 'v5', name: 'Elena Park', handle: 'Blink', team: 'Cobalt Strikers', role: 'Sentinel', game: 'Valorant', image: 'https://placehold.co/200x200/0047AB/ffffff?text=Blink', kda: '1.08', winRate: '66%', stats: [
+    { subject: 'ACS', A: 95 }, { subject: 'K/D', A: 105 }, { subject: 'HS%', A: 120 }, { subject: 'Clutch', A: 130 }, { subject: 'Utility', A: 140 }, { subject: 'Support', A: 135 }
+  ]},
+
+  // Rocket League — 3 teams (Nebula, Quantum, Iron Legion)
   { id: 'r1', name: 'Jean Pierre', handle: 'Gravity', team: 'Nebula', role: 'Striker', game: 'Rocket League', image: 'https://placehold.co/200x200/6366f1/ffffff?text=Grav', kda: 'N/A', winRate: '78%', stats: [
     { subject: 'Goals', A: 140 }, { subject: 'Saves', A: 130 }, { subject: 'Assists', A: 145 }, { subject: 'Aerials', A: 148 }, { subject: 'Speed', A: 120 }, { subject: 'Boost', A: 135 }
   ]},
   { id: 'r2', name: 'Lucas Wright', handle: 'Orbit', team: 'Quantum', role: 'All-Rounder', game: 'Rocket League', image: 'https://placehold.co/200x200/8b5cf6/ffffff?text=Orbit', kda: 'N/A', winRate: '72%', stats: [
     { subject: 'Goals', A: 130 }, { subject: 'Saves', A: 145 }, { subject: 'Assists', A: 120 }, { subject: 'Aerials', A: 140 }, { subject: 'Speed', A: 130 }, { subject: 'Mechanics', A: 150 }
   ]},
+  { id: 'r3', name: 'Mateo Cruz', handle: 'Boost', team: 'Nebula', role: 'Wing', game: 'Rocket League', image: 'https://placehold.co/200x200/4f46e5/ffffff?text=Boost', kda: 'N/A', winRate: '74%', stats: [
+    { subject: 'Goals', A: 135 }, { subject: 'Saves', A: 128 }, { subject: 'Assists', A: 138 }, { subject: 'Aerials', A: 142 }, { subject: 'Speed', A: 132 }, { subject: 'Boost', A: 140 }
+  ]},
+  { id: 'r4', name: 'Evan Lee', handle: 'Flip', team: 'Quantum', role: 'Defender', game: 'Rocket League', image: 'https://placehold.co/200x200/7c3aed/ffffff?text=Flip', kda: 'N/A', winRate: '69%', stats: [
+    { subject: 'Goals', A: 120 }, { subject: 'Saves', A: 150 }, { subject: 'Assists', A: 118 }, { subject: 'Aerials', A: 136 }, { subject: 'Speed', A: 125 }, { subject: 'Mechanics', A: 145 }
+  ]},
+  { id: 'r5', name: 'Oliver Grant', handle: 'Titan', team: 'Iron Legion', role: 'Anchor', game: 'Rocket League', image: 'https://placehold.co/200x200/374151/ffffff?text=Titan', kda: 'N/A', winRate: '65%', stats: [
+    { subject: 'Goals', A: 125 }, { subject: 'Saves', A: 135 }, { subject: 'Assists', A: 122 }, { subject: 'Aerials', A: 130 }, { subject: 'Speed', A: 118 }, { subject: 'Boost', A: 120 }
+  ]},
+
+  // Super Smash Bros — 3 teams (Solar Flare, Lunar Tide, Comet Edge)
   { id: 's1', name: 'Leo King', handle: 'Monarch', team: 'Solar Flare', role: 'Swordsman', game: 'Super Smash Bros', image: 'https://placehold.co/200x200/f59e0b/ffffff?text=King', kda: 'N/A', winRate: '85%', stats: [
     { subject: 'Neutral', A: 150 }, { subject: 'Advantage', A: 140 }, { subject: 'Disadv.', A: 145 }, { subject: 'Edgeguard', A: 130 }, { subject: 'Ledgetrap', A: 140 }, { subject: 'Clutch', A: 145 }
   ]},
   { id: 's2', name: 'Sam Park', handle: 'Prodigy', team: 'Lunar Tide', role: 'Brawler', game: 'Super Smash Bros', image: 'https://placehold.co/200x200/0ea5e9/ffffff?text=Pro', kda: 'N/A', winRate: '82%', stats: [
     { subject: 'Neutral', A: 140 }, { subject: 'Advantage', A: 150 }, { subject: 'Disadv.', A: 130 }, { subject: 'Edgeguard', A: 140 }, { subject: 'Ledgetrap', A: 135 }, { subject: 'Clutch', A: 130 }
+  ]},
+  { id: 's3', name: 'Kai Turner', handle: 'Comet', team: 'Comet Edge', role: 'Zoner', game: 'Super Smash Bros', image: 'https://placehold.co/200x200/f97316/ffffff?text=Comet', kda: 'N/A', winRate: '78%', stats: [
+    { subject: 'Neutral', A: 138 }, { subject: 'Advantage', A: 132 }, { subject: 'Disadv.', A: 140 }, { subject: 'Edgeguard', A: 135 }, { subject: 'Ledgetrap', A: 128 }, { subject: 'Clutch', A: 142 }
   ]}
 ];
 
